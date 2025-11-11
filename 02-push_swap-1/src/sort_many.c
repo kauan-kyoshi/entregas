@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sort_many.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/07 16:59:36 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/07 16:59:37 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/11/11 12:09:34 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,29 @@ static void	phase_pull_b_to_a(t_stack *stack, int size)
 	}
 }
 
+static void	bring_min_to_top_and_pb(t_stack *stack)
+{
+	int pos;
+	int size;
+
+	if (!stack || !stack->a)
+		return ;
+	size = (int)stack->a->size;
+	pos = find_position(stack->a, find_min_value(stack->a));
+	if (pos <= size / 2)
+	{
+		while (pos-- > 0)
+			ra(stack, 1);
+	}
+	else
+	{
+		pos = size - pos;
+		while (pos-- > 0)
+			rra(stack, 1);
+	}
+	pb(stack, 1);
+}
+
 void	sort_many(t_stack *stack)
 {
 	int		size;
@@ -78,6 +101,22 @@ void	sort_many(t_stack *stack)
 	int		chunk_size;
 
 	size = stack->a->size;
+	if (size == 4)
+	{
+		bring_min_to_top_and_pb(stack);
+		sort_3(stack);
+		pa(stack, 1);
+		return ;
+	}
+	if (size == 5)
+	{
+		bring_min_to_top_and_pb(stack);
+		bring_min_to_top_and_pb(stack);
+		sort_3(stack);
+		pa(stack, 1);
+		pa(stack, 1);
+		return ;
+	}
 	if (size <= 100)
 		chunks = 5;
 	else
