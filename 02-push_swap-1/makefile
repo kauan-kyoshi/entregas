@@ -23,7 +23,9 @@ SRCS = 	main.c \
 		utils_mem.c \
 		utils_nodes.c \
 		utils_search.c \
-		checker_ops.c
+		checker_ops.c\
+		pull_b.c\
+		small_cases.c
 
 SRCS_FULL = $(addprefix $(SRCS_DIR)/, $(SRCS))
 

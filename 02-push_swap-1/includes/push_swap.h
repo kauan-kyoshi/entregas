@@ -6,7 +6,7 @@
 /*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/09 17:31:30 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/10/17 18:37:09 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/11/11 16:04:36 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,5 +76,9 @@ void	sort_many(t_stack *stack);
 
 /* Checker helpers */
 int		apply_op(t_stack *stack, const char *op);
+void	move_to_top_b(t_stack *stack, int position);
+void	phase_pull_b_to_a(t_stack *stack, int size);
+void	bring_min_to_top_and_pb(t_stack *stack);
+int		handle_small_cases(t_stack *stack, int size);
 
 #endif
