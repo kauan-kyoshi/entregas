@@ -6,7 +6,7 @@
 #    By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/16 16:27:13 by kakubo-l          #+#    #+#              #
-#    Updated: 2025/10/30 15:29:55 by kakubo-l         ###   ########.fr        #
+#    Updated: 2025/11/12 11:23:15 by kakubo-l         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -77,18 +77,18 @@ RM		= rm -f
 all:		$(NAME)
 
 ${NAME}: ${OBJS}
-	${LIBC} ${NAME} ${OBJS}
+	@${LIBC} ${NAME} ${OBJS}
 
 
 %.o: %.c
-	${CC} ${CFLAGS} -c $< -o $@
+	@${CC} ${CFLAGS} -c $< -o $@ 
 
 
 clean:
-	${RM} ${OBJS}
+	@${RM} ${OBJS}
 
 fclean: clean
-	${RM} ${NAME} 
+	@${RM} ${NAME} 
 
 re:	fclean all
 

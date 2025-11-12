@@ -43,15 +43,16 @@ CHECKER_OBJ = $(OBJ_DIR)/checker.o
 all: $(NAME)
 
 $(NAME): $(OBJS) $(LIBFT)
-	@echo "..."
 	@$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
+	@echo 'ARG="$$(shuf -i 0-99 | tr "\n" " ")"; ./push_swap $$ARG | ./checker $$ARG'
 	@echo "Code by: Kyoshi Lima ^-^ "
+
 
 $(CHECKER): $(CHECKER_OBJ) $(filter-out $(OBJ_DIR)/main.o,$(OBJS)) $(LIBFT)
 	@$(CC) $(CFLAGS) $(filter-out $(OBJ_DIR)/main.o,$(OBJS)) $(CHECKER_OBJ) $(LIBFT) -o $(CHECKER)
 
 $(LIBFT):
-	@make -C $(LIBFT_DIR)
+	@make -s -C $(LIBFT_DIR) 2> /dev/null
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
@@ -61,11 +62,11 @@ $(OBJ_DIR)/%.o: $(SRCS_DIR)/%.c | $(OBJ_DIR)
 
 clean:
 	@rm -rf $(OBJ_DIR)
-	@make -C $(LIBFT_DIR) clean
+	@make -s -C $(LIBFT_DIR) clean 2> /dev/null
 
 fclean: clean
 	@rm -f $(NAME) $(CHECKER)
-	@make -C $(LIBFT_DIR) fclean
+	@make -s -C $(LIBFT_DIR) fclean 2> /dev/null
 
 re: fclean all
 
