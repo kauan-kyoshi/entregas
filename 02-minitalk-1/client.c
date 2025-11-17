@@ -6,7 +6,7 @@
 /*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/13 16:53:19 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/14 17:27:18 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/11/17 15:39:35 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <stdlib.h>
-
 
 static volatile sig_atomic_t	g_ack_count = 0;
 
