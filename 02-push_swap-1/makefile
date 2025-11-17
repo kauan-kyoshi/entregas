@@ -45,7 +45,7 @@ all: $(NAME)
 $(NAME): $(OBJS) $(LIBFT)
 	@$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
 	@echo 'ARG="$$(shuf -i 0-99 | tr "\n" " ")"; ./push_swap $$ARG | ./checker $$ARG'
-	@echo "Code by: Kyoshi Lima ^-^ "
+		
 
 
 $(CHECKER): $(CHECKER_OBJ) $(filter-out $(OBJ_DIR)/main.o,$(OBJS)) $(LIBFT)
