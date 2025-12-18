@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   exe_cmd.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/28 14:28:56 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/28 14:42:20 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/17 23:10:02 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.h"
-void    exec_cmd(t_cmd *cmd)
+
+void exec_cmd(t_cmd *cmd)
 {
-    print_pipeline_structure(cmd);
+    (void)cmd;
+    /* executor not implemented here; partner will implement exec/pipes/redirs */
 }

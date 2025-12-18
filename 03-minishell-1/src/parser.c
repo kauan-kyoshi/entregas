@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 16:26:47 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/28 14:46:33 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/17 23:11:50 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <readline/readline.h>
+#include <ctype.h>
 
 static t_cmd *cmd_new(void)
 {
@@ -110,35 +116,8 @@ void free_commands(t_cmd *cmds)
     }
 }
 
-void print_commands(t_cmd *cmds)
-{
-    int idx = 0;
-    t_cmd *c = cmds;
+/* debug printing removed */
 
-    while (c)
-    {
-        printf("Command %d:\n", idx);
-        if (c->args)
-        {
-            for (size_t i = 0; c->args[i]; i++)
-                printf("  argv[%zu] = %s\n", i, c->args[i]);
-        }
-        else
-            printf("  (no argv)\n");
-        if (c->redirs)
-        {
-            t_redir *r = c->redirs;
-            while (r)
-            {
-                printf("  redir type=%d target=%s\n", r->type, r->file);
-                r = r->next;
-            }
-        }
-        c = c->next;
-        idx++;
-    }
-}
-/*
 t_cmd *parse_tokens(t_token *tokens)
 {
     t_cmd *head = NULL;
@@ -158,7 +137,10 @@ t_cmd *parse_tokens(t_token *tokens)
                     head = cur;
             }
             if (add_arg(cur, tk->raw) == -1)
+            {
+                free_commands(head);
                 return (NULL);
+            }
         }
         else if (tk->type == TOK_REDIR_IN || tk->type == TOK_REDIR_OUT || tk->type == TOK_REDIR_APPEND || tk->type == TOK_HEREDOC)
         {
@@ -188,12 +170,150 @@ t_cmd *parse_tokens(t_token *tokens)
                 if (!head)
                     head = cur;
             }
-            if (add_redir(cur, rt, next->raw) == -1)
+            if (rt == HEREDOC)
             {
-                free_commands(head);
-                return (NULL);
+                /* handle heredoc: read lines until delimiter (next->raw)
+                   If the delimiter token was quoted, do not expand heredoc content. */
+                int expand = 1;
+                if (next->segs)
+                {
+                    for (t_seg *s = next->segs; s; s = s->next)
+                    {
+                        if (s->type == SEG_SINGLE_QUOTED || s->type == SEG_DOUBLE_QUOTED)
+                        {
+                            expand = 0;
+                            break;
+                        }
+                    }
+                }
+                /* create tmpfile and write heredoc content */
+                char template[] = "/tmp/minishell_heredoc_XXXXXX";
+                int fd = mkstemp(template);
+                if (fd == -1)
+                {
+                    perror("mkstemp");
+                    free_commands(head);
+                    return (NULL);
+                }
+                while (1)
+                {
+                    char *line = readline("heredoc> ");
+                    if (!line)
+                    {
+                        /* EOF (Ctrl-D) */
+                        break;
+                    }
+                    if (strcmp(line, next->raw) == 0)
+                    {
+                        free(line);
+                        break;
+                    }
+                    char *out_line = NULL;
+                    if (expand)
+                    {
+                        /* expand $VAR and $? in the line - simple expansion */
+                        size_t cap = strlen(line) + 1;
+                        out_line = malloc(cap);
+                        if (!out_line)
+                        {
+                            free(line);
+                            close(fd);
+                            free_commands(head);
+                            return (NULL);
+                        }
+                        size_t out_len = 0;
+                        for (size_t i = 0; line[i]; )
+                        {
+                            if (line[i] == '$')
+                            {
+                                if (line[i+1] == '?')
+                                {
+                                    char numbuf[32];
+                                    int l = snprintf(numbuf, sizeof(numbuf), "%d", 0);
+                                    size_t need = out_len + (size_t)l + 1;
+                                    if (need > cap)
+                                    {
+                                        cap = need * 2;
+                                        out_line = realloc(out_line, cap);
+                                        if (!out_line) { free(line); close(fd); free_commands(head); return (NULL); }
+                                    }
+                                    memcpy(out_line + out_len, numbuf, l);
+                                    out_len += l;
+                                    i += 2;
+                                    continue;
+                                }
+                                if (isalpha((unsigned char)line[i+1]) || line[i+1] == '_')
+                                {
+                                    size_t j = i+1;
+                                    while (line[j] && (isalnum((unsigned char)line[j]) || line[j] == '_')) j++;
+                                    size_t namelen = j - (i+1);
+                                    char *name = malloc(namelen + 1);
+                                    if (!name) { free(line); close(fd); free_commands(head); return (NULL); }
+                                    memcpy(name, line + i + 1, namelen);
+                                    name[namelen] = '\0';
+                                    extern char **environ;
+                                    char *val = NULL;
+                                    for (size_t e = 0; environ && environ[e]; e++)
+                                    {
+                                        if (strncmp(environ[e], name, namelen) == 0 && environ[e][namelen] == '=')
+                                        {
+                                            val = environ[e] + namelen + 1;
+                                            break;
+                                        }
+                                    }
+                                    if (!val) val = "";
+                                    size_t need = out_len + strlen(val) + 1;
+                                    if (need > cap)
+                                    {
+                                        cap = need * 2;
+                                        out_line = realloc(out_line, cap);
+                                        if (!out_line) { free(name); free(line); close(fd); free_commands(head); return (NULL); }
+                                    }
+                                    strcpy(out_line + out_len, val);
+                                    out_len += strlen(val);
+                                    free(name);
+                                    i = j;
+                                    continue;
+                                }
+                                if (out_len + 2 > cap) { cap = (out_len + 2) * 2; out_line = realloc(out_line, cap); if (!out_line) { free(line); close(fd); free_commands(head); return (NULL); } }
+                                out_line[out_len++] = '$';
+                                i++;
+                                continue;
+                            }
+                            if (out_len + 2 > cap) { cap = (out_len + 2) * 2; out_line = realloc(out_line, cap); if (!out_line) { free(line); close(fd); free_commands(head); return (NULL); } }
+                            out_line[out_len++] = line[i++];
+                        }
+                        out_line[out_len] = '\0';
+                    }
+                    else
+                    {
+                        out_line = strdup(line);
+                    }
+                    if (out_line)
+                    {
+                        write(fd, out_line, strlen(out_line));
+                        write(fd, "\n", 1);
+                        free(out_line);
+                    }
+                    free(line);
+                }
+                close(fd);
+                if (add_redir(cur, rt, template) == -1)
+                {
+                    free_commands(head);
+                    return (NULL);
+                }
+                tk = next; /* consume target */
             }
-            tk = next; /* consume target 
+            else
+            {
+                if (add_redir(cur, rt, next->raw) == -1)
+                {
+                    free_commands(head);
+                    return (NULL);
+                }
+                tk = next; /* consume target */
+            }
         }
         else if (tk->type == TOK_PIPE)
         {
@@ -203,7 +323,7 @@ t_cmd *parse_tokens(t_token *tokens)
                 free_commands(head);
                 return (NULL);
             }
-            /* start a new command
+            /* start a new command */
             cur->next = cmd_new();
             if (!cur->next)
             {
@@ -222,10 +342,6 @@ t_cmd *parse_tokens(t_token *tokens)
     }
     return (head);
 }
-*/
 
 
-t_cmd *parser(void)
-{
-    return pupulate_struct();
-}
+/* parser() wrapper removed; use parse_tokens(tokens) directly */

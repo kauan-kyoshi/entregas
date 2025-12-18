@@ -63,13 +63,13 @@ Funcionalidade básica
 Parsing e expansão
 - [x] Tokenização básica implementada (palavras, pipes `|`, redirecionadores `<`, `>`, `>>`, `<<`) — `lexer_tokenize` em `src/lexer.c` junto com helpers em `src/lexer_helpers.c`.
 - [x] Tratamento de aspas (remoção das aspas no token final) implementado: `collect_word` constrói tokens sem as aspas.
-- [ ] Tratamento completo de aspas duplas (expansão dentro de `"..."`) — remoção das aspas feita, mas expansão ainda precisa ser implementada.
-- [ ] Expansão de variáveis `$VAR` e `$?` usando o ambiente e último status (ainda não implementado). Sugestão: implementar `expand_tokens(t_token *head, char **env, int last_status)`.
-- [ ] Heredoc (`<<`) leitura e armazenamento (arquivo temporário ou buffer) ainda não implementados.
+ - [x] Tratamento completo de aspas duplas (expansão dentro de `"..."`) — lexer cria segmentos e `src/expander.c` faz expansão nos segmentos duplamente citados; escapes dentro de `"` ainda não totalmente tratados.
+ - [x] Expansão de variáveis `$VAR` e `$?` usando o ambiente e último status — implementado (`src/expander.c`), atualmente sem word-splitting (expansão preserva o token como único argumento).
+ - [x] Heredoc (`<<`) leitura e armazenamento (arquivo temporário) implementados: o parser lê as linhas do heredoc usando `readline("heredoc> ")`, cria um arquivo temporário com `mkstemp()` e escreve o conteúdo nele; o caminho do tmpfile é guardado em um `t_redir` com tipo `HEREDOC`. A expansão de variáveis dentro do heredoc é aplicada apenas se o delimitador não estiver citado (quando o delimitador contém aspas, a expansão é desativada). Documentem quem fará o `unlink()` do tmpfile (executor ou controlador).
 
 Parser (tokens -> comandos)
 - [x] Parser simples implementado (`src/parser.c`, `include/parser.h`): agrupa `TOK_WORD` em `argv`, associa redirecionamentos ao comando correto, e separa comandos por `TOK_PIPE`.
-  - Observação: parser atual é minimalista — validações simples (redir sem alvo, pipe sem comando) e `HEREDOC` tratado apenas como redirecionador que aponta para token seguinte; leitura do heredoc ainda é necessária.
+
 
 Execução
 - [ ] Executar comandos por caminho absoluto/relativo ou pesquisando em `PATH`.

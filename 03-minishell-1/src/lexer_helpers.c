@@ -71,102 +71,143 @@ int	handle_redir(const char *line, size_t *i, size_t len, t_token **head)
 /* helper to detect word-breaking characters */
 int	collect_word(const char *line, size_t *i, size_t len, t_token **head)
 {
-	size_t  buf_cap;
-	size_t  buf_len;
-	char    *buf;
-	int     seen_single;
-	int     seen_other;
 
-	buf_cap = 64;
-	buf_len = 0;
-	seen_single = 0;
-	seen_other = 0;
-	buf = malloc(buf_cap);
-	if (!buf)
-		return (-1);
-	while (*i < len)
-	{
-		if (line[*i] == '\'')
-		{
-			/* single quotes: copy literally until closing quote */
-			(*i)++;
-			seen_single = 1;
-			while (*i < len && line[*i] != '\'')
-			{
-				if (buf_len + 1 >= buf_cap)
-				{
-					buf_cap *= 2;
-					buf = realloc(buf, buf_cap);
-					if (!buf)
-						return (-1);
-				}
-				buf[buf_len++] = line[*i];
-				(*i)++;
-			}
-			if (*i >= len)
-			{
-				free(buf);
-				token_free_all(*head);
-				*head = token_new(TOK_ERROR, "unterminated_quote");
-				return (-2);
-			}
-			(*i)++;
-			continue ;
-		}
-		if (line[*i] == '"')
-		{
-			/* double quotes: copy content (expansion handled later) */
-			(*i)++;
-			seen_other = 1;
-			while (*i < len && line[*i] != '"')
-			{
-				if (buf_len + 1 >= buf_cap)
-				{
-					buf_cap *= 2;
-					buf = realloc(buf, buf_cap);
-					if (!buf)
-						return (-1);
-				}
-				buf[buf_len++] = line[*i];
-				(*i)++;
-			}
-			if (*i >= len)
-			{
-				free(buf);
-				token_free_all(*head);
-				*head = token_new(TOK_ERROR, "unterminated_quote");
-				return (-2);
-			}
-			(*i)++;
-			continue ;
-		}
-		if (isspace((unsigned char)line[*i]) || line[*i] == '|' || line[*i] == '<' || line[*i] == '>')
-			break;
-		if (buf_len + 1 >= buf_cap)
-		{
-			buf_cap *= 2;
-			buf = realloc(buf, buf_cap);
-			if (!buf)
-				return (-1);
-		}
-		buf[buf_len++] = line[*i];
-		(*i)++;
-	}
-	buf[buf_len] = '\0';
-	{
-		t_token *t;
+	/* build a list of segments for this word, preserving quoting context */
+	 t_seg *segs = NULL;
+	 t_seg *last = NULL;
+	 int seen_single = 0;
+	 int seen_double = 0;
 
-		t = token_new(TOK_WORD, buf);
-		free(buf);
-		if (!t)
-			return (-1);
-		/* if token was built only from single-quoted parts, disable expansion */
-		if (seen_single && !seen_other)
-			t->no_expand = 1;
-		token_append(head, t);
-	}
-	return (0);
+	 while (*i < len)
+	 {
+		 if (line[*i] == '\'')
+		 {
+			 /* single-quoted segment */
+			 size_t start = ++(*i);
+			 while (*i < len && line[*i] != '\'')
+				 (*i)++;
+			 if (*i >= len)
+			 {
+				 token_free_all(*head);
+				 *head = token_new(TOK_ERROR, "unterminated_quote");
+				 return (-2);
+			 }
+			 size_t slen = *i - start;
+			 char *s = malloc(slen + 1);
+			 if (!s)
+			 {
+				 /* cleanup */
+				 t_seg *it = segs;
+				 while (it) { t_seg *n = it->next; free(it->str); free(it); it = n; }
+				 return (-1);
+			 }
+			 memcpy(s, line + start, slen);
+			 s[slen] = '\0';
+			 t_seg *node = malloc(sizeof(t_seg));
+			 if (!node) { free(s); return (-1); }
+			 node->type = SEG_SINGLE_QUOTED;
+			 node->str = s;
+			 node->next = NULL;
+			 if (last) last->next = node; else segs = node;
+			 last = node;
+			 seen_single = 1;
+			 (*i)++; /* skip closing quote */
+			 continue;
+		 }
+		 if (line[*i] == '"')
+		 {
+			 /* double-quoted segment */
+			 size_t start = ++(*i);
+			 while (*i < len && line[*i] != '"')
+				 (*i)++;
+			 if (*i >= len)
+			 {
+				 token_free_all(*head);
+				 *head = token_new(TOK_ERROR, "unterminated_quote");
+				 return (-2);
+			 }
+			 size_t slen = *i - start;
+			 char *s = malloc(slen + 1);
+			 if (!s) { /* cleanup */ t_seg *it = segs; while (it) { t_seg *n = it->next; free(it->str); free(it); it = n; } return (-1); }
+			 memcpy(s, line + start, slen);
+			 s[slen] = '\0';
+			 t_seg *node = malloc(sizeof(t_seg));
+			 if (!node) { free(s); return (-1); }
+			 node->type = SEG_DOUBLE_QUOTED;
+			 node->str = s;
+			 node->next = NULL;
+			 if (last) last->next = node; else segs = node;
+			 last = node;
+			 seen_double = 1;
+			 (*i)++; /* skip closing quote */
+			 continue;
+		 }
+		 if (isspace((unsigned char)line[*i]) || line[*i] == '|' || line[*i] == '<' || line[*i] == '>')
+			 break;
+		 /* unquoted segment */
+		 size_t start = *i;
+		 while (*i < len && !isspace((unsigned char)line[*i]) && line[*i] != '|' && line[*i] != '<' && line[*i] != '"' && line[*i] != '\'')
+			 (*i)++;
+		 size_t slen = *i - start;
+		 char *s = malloc(slen + 1);
+		 if (!s) { t_seg *it = segs; while (it) { t_seg *n = it->next; free(it->str); free(it); it = n; } return (-1); }
+		 memcpy(s, line + start, slen);
+		 s[slen] = '\0';
+		 t_seg *node = malloc(sizeof(t_seg));
+		 if (!node) { free(s); return (-1); }
+		 node->type = SEG_UNQUOTED;
+		 node->str = s;
+		 node->next = NULL;
+		 if (last) last->next = node; else segs = node;
+		 last = node;
+	 }
+
+	 if (!segs)
+	 {
+		 /* nothing collected */
+		 t_token *t = token_new(TOK_WORD, "");
+		 if (!t) return (-1);
+		 token_append(head, t);
+		 return (0);
+	 }
+
+	 /* determine flags */
+	 int all_single = 1;
+	 for (t_seg *it = segs; it; it = it->next)
+	 {
+		 if (it->type != SEG_SINGLE_QUOTED)
+		 {
+			 all_single = 0;
+			 break;
+		 }
+	 }
+
+	 /* create token and attach segments */
+	 t_token *t = token_new(TOK_WORD, NULL);
+	 if (!t)
+	 {
+		 t_seg *it = segs;
+		 while (it) { t_seg *n = it->next; free(it->str); free(it); it = n; }
+		 return (-1);
+	 }
+	 t->segs = segs;
+	 t->no_expand = all_single ? 1 : 0;
+	 t->in_double = seen_double ? 1 : 0;
+
+	 /* build raw by concatenating segments */
+	 size_t total = 0;
+	 for (t_seg *it = segs; it; it = it->next) total += strlen(it->str);
+	 t->raw = malloc(total + 1);
+	 if (!t->raw)
+	 {
+		 /* cleanup */
+		 t_seg *it = segs; while (it) { t_seg *n = it->next; free(it->str); free(it); it = n; }
+		 free(t);
+		 return (-1);
+	 }
+	 t->raw[0] = '\0';
+	 for (t_seg *it = segs; it; it = it->next) strcat(t->raw, it->str);
+	 token_append(head, t);
+	 return (0);
 }
 
-/* create_and_append removed: token creation happens in lexer.c to satisfy
-   Norminette function/count limits. */

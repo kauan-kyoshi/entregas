@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:04:12 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/27 16:16:08 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/17 23:10:02 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ t_token	*token_new(t_token_type type, const char *str)
 	t->type = type;
 	t->raw = NULL;
 	t->no_expand = 0;
+	t->in_double = 0;
+    t->segs = NULL;
 	if (str)
 	{
 		t->raw = malloc(strlen(str) + 1);
@@ -63,6 +65,19 @@ void	token_free_all(t_token *head)
 	while (head)
 	{
 		tmp = head->next;
+		/* free segments */
+		if (head->segs)
+		{
+			t_seg *s = head->segs;
+			while (s)
+			{
+				t_seg *sn = s->next;
+				if (s->str)
+					free(s->str);
+				free(s);
+				s = sn;
+			}
+		}
 		if (head->raw)
 			free(head->raw);
 		free(head);
@@ -70,17 +85,4 @@ void	token_free_all(t_token *head)
 	}
 }
 
-void	token_debug_print(const t_token *head)
-{
-	const char	*val;
-
-	while (head)
-	{
-		if (head->raw)
-			val = head->raw;
-		else
-			val = "(null)";
-		printf("type=%d raw=%s\n", head->type, val);
-		head = head->next;
-	}
-}
+/* debug printing removed */

@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/28 14:40:19 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/17 21:54:39 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include "parser.h"
 #include "exec.h"
+#include "lexer.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -59,6 +60,8 @@ int	main(void)
 {
 	char	*line;
     t_cmd   *cmd;
+    t_token *tokens;
+    extern char **environ;
 	setup_signals();
 	while (1)
 	{
@@ -67,10 +70,20 @@ int	main(void)
 			break ;
 		if (line[0] != '\0')
 		{
-			printf("%s\n", line);
 			add_history(line);
-            cmd = parser();
-            exec_cmd(cmd);
+			/* tokenize -> expand -> parse -> exec (exec is still a stub) */
+			tokens = lexer_tokenize(line);
+			if (tokens)
+			{
+				expand_tokens(tokens, environ, 0);
+				cmd = parse_tokens(tokens);
+				token_free_all(tokens);
+				if (cmd)
+				{
+					exec_cmd(cmd);
+					free_commands(cmd);
+				}
+			}
 		}
 		free(line);
 	}

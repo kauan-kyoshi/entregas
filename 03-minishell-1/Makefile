@@ -24,7 +24,6 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 $(LIBFT_A):
-	@echo "Assumindo que libft está pronta em $(LIBFT_DIR)"
 	@$(MAKE) -C $(LIBFT_DIR)
 
 

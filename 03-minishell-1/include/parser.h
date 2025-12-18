@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 16:26:53 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/28 14:35:28 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/17 23:09:02 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,7 @@ typedef struct s_cmd
 } t_cmd;
 
 t_cmd   *parse_tokens(t_token *tokens);
-void    print_commands(t_cmd *cmds);
 void    free_commands(t_cmd *cmds);
-t_redir *new_redir(t_redir_type type, char *filename);
-t_cmd *new_cmd(char **args);
-t_cmd *populate_struct_manual(void);
-void print_pipeline_structure(t_cmd *cmd_list);
-t_cmd *pupulate_struct(void);
-t_cmd *parser(void);
+/* parser() wrapper removed; use parse_tokens() directly */
 
 #endif
