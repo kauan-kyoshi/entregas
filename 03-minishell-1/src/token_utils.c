@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:04:12 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/17 23:10:02 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/18 17:58:14 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ t_token	*token_new(t_token_type type, const char *str)
 	t->raw = NULL;
 	t->no_expand = 0;
 	t->in_double = 0;
-    t->segs = NULL;
+	t->segs = NULL;
 	if (str)
 	{
 		t->raw = malloc(strlen(str) + 1);
@@ -58,6 +58,22 @@ void	token_append(t_token **head, t_token *node)
 	it->next = node;
 }
 
+static void	free_segments(t_seg *segs)
+{
+	t_seg	*s;
+	t_seg	*sn;
+
+	s = segs;
+	while (s)
+	{
+		sn = s->next;
+		if (s->str)
+			free(s->str);
+		free(s);
+		s = sn;
+	}
+}
+
 void	token_free_all(t_token *head)
 {
 	t_token	*tmp;
@@ -65,19 +81,8 @@ void	token_free_all(t_token *head)
 	while (head)
 	{
 		tmp = head->next;
-		/* free segments */
 		if (head->segs)
-		{
-			t_seg *s = head->segs;
-			while (s)
-			{
-				t_seg *sn = s->next;
-				if (s->str)
-					free(s->str);
-				free(s);
-				s = sn;
-			}
-		}
+			free_segments(head->segs);
 		if (head->raw)
 			free(head->raw);
 		free(head);

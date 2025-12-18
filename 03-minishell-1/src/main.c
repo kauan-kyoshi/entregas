@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/17 21:54:39 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/18 18:15:29 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,31 @@ static void	setup_signals(void)
 		perror("sigaction(SIGQUIT)");
 }
 
+static void	process_line(char *line, char **environ)
+{
+	t_token		*tokens;
+	t_cmd		*cmd;
+
+	add_history(line);
+	tokens = lexer_tokenize(line);
+	if (tokens)
+	{
+		expand_tokens(tokens, environ, 0);
+		cmd = parse_tokens(tokens);
+		token_free_all(tokens);
+		if (cmd)
+		{
+			exec_cmd(cmd);
+			free_commands(cmd);
+		}
+	}
+}
+
 int	main(void)
 {
-	char	*line;
-    t_cmd   *cmd;
-    t_token *tokens;
-    extern char **environ;
+	char		*line;
+	extern char	**environ;
+
 	setup_signals();
 	while (1)
 	{
@@ -69,22 +88,7 @@ int	main(void)
 		if (!line)
 			break ;
 		if (line[0] != '\0')
-		{
-			add_history(line);
-			/* tokenize -> expand -> parse -> exec (exec is still a stub) */
-			tokens = lexer_tokenize(line);
-			if (tokens)
-			{
-				expand_tokens(tokens, environ, 0);
-				cmd = parse_tokens(tokens);
-				token_free_all(tokens);
-				if (cmd)
-				{
-					exec_cmd(cmd);
-					free_commands(cmd);
-				}
-			}
-		}
+			process_line(line, environ);
 		free(line);
 	}
 	return (0);

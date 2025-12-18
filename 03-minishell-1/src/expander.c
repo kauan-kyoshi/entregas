@@ -3,194 +3,121 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/17 21:53:24 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/18 12:46:17 by kyoshi           ###   ########.fr       */
+/*   Created: 2025/12/17 21:53:24 by kakubo-l          #+#    #+#             */
+/*   Updated: 2025/12/18 18:04:58 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <ctype.h>
 
-static char *get_env_value(char **envp, const char *name)
+static int	expand_var(t_exp *ctx, const char *s, size_t *i)
 {
-    size_t len = strlen(name);
-    if (!envp)
-        return NULL;
-    {
-        size_t i = 0;
-        while (envp[i])
-        {
-            if (strncmp(envp[i], name, len) == 0 && envp[i][len] == '=')
-                return envp[i] + len + 1;
-            i++;
-        }
-    }
-    return NULL;
+	size_t	j;
+	size_t	namelen;
+	char	*name;
+	char	*val;
+
+	j = *i + 1;
+	while (s[j] && (isalnum((unsigned char)s[j]) || s[j] == '_'))
+		j++;
+	namelen = j - (*i + 1);
+	name = malloc(namelen + 1);
+	if (!name)
+		return (0);
+	memcpy(name, s + *i + 1, namelen);
+	name[namelen] = '\0';
+	val = get_env_value(ctx->envp, name);
+	if (!val)
+		val = "";
+	free(name);
+	if (!expand_buf(ctx, val))
+		return (0);
+	*i = j;
+	return (1);
 }
 
-static char *int_to_str(int n)
+static int	expand_dollar(t_exp *ctx, const char *s, size_t *i)
 {
-    char buf[32];
-    int len;
-
-    len = snprintf(buf, sizeof(buf), "%d", n);
-    if (len < 0)
-        return NULL;
-    return strdup(buf);
+	if (s[*i + 1] == '?')
+		return (expand_status(ctx, i));
+	if (isalpha((unsigned char)s[*i + 1]) || s[*i + 1] == '_')
+		return (expand_var(ctx, s, i));
+	if (!expand_char(ctx))
+		return (0);
+	ctx->out[ctx->out_len++] = '$';
+	(*i)++;
+	return (1);
 }
 
-void expand_tokens(t_token *head, char **envp, int last_status)
+static char	*expand_string(const char *s, char **envp, int last_status)
 {
-    t_token *tk = head;
+	t_exp	ctx;
+	size_t	i;
 
-    while (tk)
-    {
-        if (tk->type != TOK_WORD)
-        {
-            tk = tk->next;
-            continue;
-        }
-        if (tk->no_expand)
-        {
-            tk = tk->next;
-            continue;
-        }
-        /* expand each segment separately (skip single-quoted segments) */
-        if (tk->segs)
-        {
-            {
-                t_seg *seg = tk->segs;
-                while (seg)
-                {
-                    if (seg->type == SEG_SINGLE_QUOTED)
-                    {
-                        seg = seg->next;
-                        continue;
-                    }
-                    const char *s = seg->str ? seg->str : "";
-                    size_t cap = strlen(s) + 1;
-                    char *out = malloc(cap);
-                    if (!out)
-                        return;
-                    size_t out_len = 0;
-                    size_t i = 0;
-                    while (s[i])
-                    {
-                        if (s[i] == '$')
-                        {
-                            if (s[i + 1] == '?')
-                            {
-                                char *code = int_to_str(last_status);
-                                if (code)
-                                {
-                                    size_t need = out_len + strlen(code) + 1;
-                                    if (need > cap)
-                                    {
-                                        cap = need * 2;
-                                        out = realloc(out, cap);
-                                        if (!out)
-                                        {
-                                            free(code);
-                                            return;
-                                        }
-                                    }
-                                    strcpy(out + out_len, code);
-                                    out_len += strlen(code);
-                                    free(code);
-                                }
-                                i += 2;
-                                continue;
-                            }
-                            if (isalpha((unsigned char)s[i + 1]) || s[i + 1] == '_')
-                            {
-                                size_t j = i + 1;
-                                while (s[j] && (isalnum((unsigned char)s[j]) || s[j] == '_'))
-                                    j++;
-                                size_t namelen = j - (i + 1);
-                                char *name = malloc(namelen + 1);
-                                if (!name)
-                                {
-                                    free(out);
-                                    return;
-                                }
-                                memcpy(name, s + i + 1, namelen);
-                                name[namelen] = '\0';
-                                char *val = get_env_value(envp, name);
-                                if (!val)
-                                    val = "";
-                                size_t need = out_len + strlen(val) + 1;
-                                if (need > cap)
-                                {
-                                    cap = need * 2;
-                                    out = realloc(out, cap);
-                                    if (!out)
-                                    {
-                                        free(name);
-                                        return;
-                                    }
-                                }
-                                strcpy(out + out_len, val);
-                                out_len += strlen(val);
-                                free(name);
-                                i = j;
-                                continue;
-                            }
-                            if (out_len + 2 > cap)
-                            {
-                                cap = (out_len + 2) * 2;
-                                out = realloc(out, cap);
-                                if (!out)
-                                    return;
-                            }
-                            out[out_len++] = '$';
-                            i++;
-                            continue;
-                        }
-                        if (out_len + 2 > cap)
-                        {
-                            cap = (out_len + 2) * 2;
-                            out = realloc(out, cap);
-                            if (!out)
-                                return;
-                        }
-                        out[out_len++] = s[i++];
-                    }
-                    out[out_len] = '\0';
-                    free(seg->str);
-                    seg->str = strdup(out);
-                    free(out);
-                    seg = seg->next;
-                }
-            }
-            /* rebuild tk->raw */
-            size_t total = 0;
-            {
-                t_seg *it = tk->segs;
-                while (it)
-                {
-                    total += strlen(it->str);
-                    it = it->next;
-                }
-            }
-            free(tk->raw);
-            tk->raw = malloc(total + 1);
-            if (!tk->raw)
-                return;
-            tk->raw[0] = '\0';
-            {
-                t_seg *it = tk->segs;
-                while (it)
-                {
-                    strcat(tk->raw, it->str);
-                    it = it->next;
-                }
-            }
-        }
-        tk = tk->next;
-    }
+	ctx.envp = envp;
+	ctx.last_status = last_status;
+	ctx.cap = strlen(s) + 1;
+	ctx.out = malloc(ctx.cap);
+	if (!ctx.out)
+		return (NULL);
+	ctx.out_len = 0;
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == '$' && !expand_dollar(&ctx, s, &i))
+			return (free(ctx.out), NULL);
+		else if (s[i] != '$')
+		{
+			if (!expand_char(&ctx))
+				return (NULL);
+			ctx.out[ctx.out_len++] = s[i++];
+		}
+	}
+	ctx.out[ctx.out_len] = '\0';
+	return (ctx.out);
+}
+
+static void	expand_segment(t_seg *seg, char **envp, int last_status)
+{
+	const char	*s;
+	char		*result;
+
+	if (seg->type == SEG_SINGLE_QUOTED)
+		return ;
+	s = seg->str;
+	if (!s)
+		s = "";
+	result = expand_string(s, envp, last_status);
+	if (!result)
+		return ;
+	free(seg->str);
+	seg->str = strdup(result);
+	free(result);
+}
+
+void	expand_tokens(t_token *head, char **envp, int last_status)
+{
+	t_token	*tk;
+	t_seg	*seg;
+
+	tk = head;
+	while (tk)
+	{
+		if (tk->type == TOK_WORD && !tk->no_expand && tk->segs)
+		{
+			seg = tk->segs;
+			while (seg)
+			{
+				expand_segment(seg, envp, last_status);
+				seg = seg->next;
+			}
+			rebuild_raw(tk);
+		}
+		tk = tk->next;
+	}
 }

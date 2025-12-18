@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 16:26:53 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/17 23:09:02 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/18 19:16:25 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,32 +14,40 @@
 # define PARSER_H
 
 # include "lexer.h"
+
 typedef enum e_redir_type
 {
-	REDIR_IN,    // <
-	REDIR_OUT,   // >
-	HEREDOC,     // <<
-	APPEND       // >>
-} t_redir_type;
+	REDIR_IN,
+	REDIR_OUT,
+	HEREDOC,
+	APPEND
+}	t_redir_type;
 
-/* Estrutura Auxiliar: Guarda UM redirecionamento */
 typedef struct s_redir
 {
-	t_redir_type    type;      // Qual o símbolo? (<, >, <<, >>)
-	char            *file;     // Qual o arquivo ou delimitador? ("log.txt")
-	struct s_redir  *next;     // Próximo redirecionamento do MESMO comando
-} t_redir;
+	t_redir_type	type;
+	char			*file;
+	struct s_redir	*next;
+}	t_redir;
 
-/* ESTRUTURA PRINCIPAL: O Comando (Vagão) */
 typedef struct s_cmd
 {
-	char            **args;    // O comando e flags para o execve (ex: {"grep", "erro", NULL})
-	t_redir         *redirs;   // Lista de entradas/saídas deste comando específico
-	struct s_cmd    *next;     // Próximo comando APÓS o pipe (|)
-} t_cmd;
+	char			**args;
+	t_redir			*redirs;
+	struct s_cmd	*next;
+}	t_cmd;
 
-t_cmd   *parse_tokens(t_token *tokens);
-void    free_commands(t_cmd *cmds);
-/* parser() wrapper removed; use parse_tokens() directly */
+t_cmd	*parse_tokens(t_token *tokens);
+void	free_commands(t_cmd *cmds);
+
+t_cmd	*cmd_new(void);
+int		add_arg(t_cmd *cmd, const char *arg);
+int		add_redir(t_cmd *cmd, t_redir_type type, const char *target);
+t_cmd	*ensure_cmd(t_cmd **head, t_cmd **cur);
+t_token	*parse_word_token(t_token *tk, t_cmd **head, t_cmd **cur);
+t_token	*parse_redir_token(t_token *tk, t_cmd **head, t_cmd **cur);
+t_token	*parse_pipe_token(t_token *tk, t_cmd **head, t_cmd **cur);
+t_token	*parse_error_token(t_token *tk, t_cmd **head);
+char	*create_heredoc(t_token *delim_token);
 
 #endif

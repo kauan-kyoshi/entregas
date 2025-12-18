@@ -6,7 +6,7 @@
 /*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/27 13:37:30 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/18 17:57:24 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,10 @@ void	sigquit_handler(int sig);
 
 typedef struct linkedlist
 {
-    char    **token;
-    int     *next;
-}   t_list;
+	char	**token;
+	int		*next;
+}	t_list;
 
-int     minishell_loop(void);
+int		minishell_loop(void);
 
 #endif
