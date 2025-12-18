@@ -172,15 +172,19 @@ int	collect_word(const char *line, size_t *i, size_t len, t_token **head)
 	 }
 
 	 /* determine flags */
-	 int all_single = 1;
-	 for (t_seg *it = segs; it; it = it->next)
-	 {
-		 if (it->type != SEG_SINGLE_QUOTED)
-		 {
-			 all_single = 0;
-			 break;
-		 }
-	 }
+	int all_single = 1;
+	{
+		t_seg *it = segs;
+		while (it)
+		{
+			if (it->type != SEG_SINGLE_QUOTED)
+			{
+				all_single = 0;
+				break;
+			}
+			it = it->next;
+		}
+	}
 
 	 /* create token and attach segments */
 	 t_token *t = token_new(TOK_WORD, NULL);
@@ -195,9 +199,16 @@ int	collect_word(const char *line, size_t *i, size_t len, t_token **head)
 	 t->in_double = seen_double ? 1 : 0;
 
 	 /* build raw by concatenating segments */
-	 size_t total = 0;
-	 for (t_seg *it = segs; it; it = it->next) total += strlen(it->str);
-	 t->raw = malloc(total + 1);
+	size_t total = 0;
+	{
+		t_seg *it = segs;
+		while (it)
+		{
+			total += strlen(it->str);
+			it = it->next;
+		}
+	}
+	t->raw = malloc(total + 1);
 	 if (!t->raw)
 	 {
 		 /* cleanup */
@@ -205,8 +216,15 @@ int	collect_word(const char *line, size_t *i, size_t len, t_token **head)
 		 free(t);
 		 return (-1);
 	 }
-	 t->raw[0] = '\0';
-	 for (t_seg *it = segs; it; it = it->next) strcat(t->raw, it->str);
+	t->raw[0] = '\0';
+	{
+		t_seg *it = segs;
+		while (it)
+		{
+			strcat(t->raw, it->str);
+			it = it->next;
+		}
+	}
 	 token_append(head, t);
 	 return (0);
 }

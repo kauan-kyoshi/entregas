@@ -6,7 +6,7 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 16:26:47 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/17 23:11:50 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/18 12:46:17 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,12 @@ static int add_arg(t_cmd *cmd, const char *arg)
         return (-1);
     if (cmd->args)
     {
-        for (size_t i = 0; i < cnt; i++)
+        size_t i = 0;
+        while (i < cnt)
+        {
             newargv[i] = cmd->args[i];
+            i++;
+        }
         free(cmd->args);
     }
     newargv[cnt] = strdup(arg);
@@ -106,8 +110,12 @@ void free_commands(t_cmd *cmds)
         tmp = c->next;
         if (c->args)
         {
-            for (i = 0; c->args[i]; i++)
+            i = 0;
+            while (c->args[i])
+            {
                 free(c->args[i]);
+                i++;
+            }
             free(c->args);
         }
         free_redirs(c->redirs);
@@ -177,13 +185,15 @@ t_cmd *parse_tokens(t_token *tokens)
                 int expand = 1;
                 if (next->segs)
                 {
-                    for (t_seg *s = next->segs; s; s = s->next)
+                    t_seg *s = next->segs;
+                    while (s)
                     {
                         if (s->type == SEG_SINGLE_QUOTED || s->type == SEG_DOUBLE_QUOTED)
                         {
                             expand = 0;
                             break;
                         }
+                        s = s->next;
                     }
                 }
                 /* create tmpfile and write heredoc content */
@@ -222,7 +232,8 @@ t_cmd *parse_tokens(t_token *tokens)
                             return (NULL);
                         }
                         size_t out_len = 0;
-                        for (size_t i = 0; line[i]; )
+                        size_t i = 0;
+                        while (line[i])
                         {
                             if (line[i] == '$')
                             {
@@ -253,12 +264,16 @@ t_cmd *parse_tokens(t_token *tokens)
                                     name[namelen] = '\0';
                                     extern char **environ;
                                     char *val = NULL;
-                                    for (size_t e = 0; environ && environ[e]; e++)
                                     {
-                                        if (strncmp(environ[e], name, namelen) == 0 && environ[e][namelen] == '=')
+                                        size_t e = 0;
+                                        while (environ && environ[e])
                                         {
-                                            val = environ[e] + namelen + 1;
-                                            break;
+                                            if (strncmp(environ[e], name, namelen) == 0 && environ[e][namelen] == '=')
+                                            {
+                                                val = environ[e] + namelen + 1;
+                                                break;
+                                            }
+                                            e++;
                                         }
                                     }
                                     if (!val) val = "";
