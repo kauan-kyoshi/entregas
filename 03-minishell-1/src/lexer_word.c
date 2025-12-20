@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   lexer_word.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 18:40:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:27:16 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:31:16 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
-#include <ctype.h>
+#include "minishell.h"
 
 static int	should_break(const char *line, size_t i)
 {
-	if (isspace((unsigned char)line[i]))
+	if (is_space_char((unsigned char)line[i]))
 		return (1);
 	if (line[i] == '|' || line[i] == '<' || line[i] == '>')
 		return (1);

@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:04:12 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 17:58:14 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:54:07 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "../libft/libft.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -29,13 +30,12 @@ t_token	*token_new(t_token_type type, const char *str)
 	t->segs = NULL;
 	if (str)
 	{
-		t->raw = malloc(strlen(str) + 1);
+		t->raw = ft_strdup(str);
 		if (!t->raw)
 		{
 			free(t);
 			return (NULL);
 		}
-		strcpy(t->raw, str);
 	}
 	t->next = NULL;
 	return (t);

@@ -6,13 +6,13 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/30 16:21:23 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/09/26 22:15:42 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/19 20:51:05 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_print_string(char *s)
+int	ft_print_string(const char *s)
 {
 	int	i;
 

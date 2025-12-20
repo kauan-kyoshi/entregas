@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 18:15:29 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/20 14:13:18 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "parser.h"
 #include "exec.h"
 #include "lexer.h"
+#include "../libft/libft.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -56,7 +57,7 @@ static void	setup_signals(void)
 		perror("sigaction(SIGQUIT)");
 }
 
-static void	process_line(char *line, char **environ)
+static void	process_line(char *line, char ***envp_ref)
 {
 	t_token		*tokens;
 	t_cmd		*cmd;
@@ -65,8 +66,8 @@ static void	process_line(char *line, char **environ)
 	tokens = lexer_tokenize(line);
 	if (tokens)
 	{
-		expand_tokens(tokens, environ, 0);
-		cmd = parse_tokens(tokens);
+		expand_tokens(tokens, *envp_ref, 0);
+		cmd = parse_tokens(tokens, envp_ref);
 		token_free_all(tokens);
 		if (cmd)
 		{
@@ -76,20 +77,33 @@ static void	process_line(char *line, char **environ)
 	}
 }
 
-int	main(void)
+int	main(int argc, char **argv, char **envp)
 {
 	char		*line;
-	extern char	**environ;
+	char		**my_env;
+
+	(void)argc;
+	(void)argv;
 
 	setup_signals();
+	my_env = dup_envp(envp);
+	if (!my_env)
+	{
+		fprintf(stderr, "minishell: failed to duplicate envp\n");
+		return (1);
+	}
 	while (1)
 	{
 		line = readline("minishell$ ");
 		if (!line)
 			break ;
 		if (line[0] != '\0')
-			process_line(line, environ);
+			process_line(line, &my_env);
 		free(line);
 	}
+	rl_clear_history();
+	free_envp(my_env);
 	return (0);
 }
+
+/* dup_envp and free_envp moved to utils_alloc.c to satisfy Norminette */

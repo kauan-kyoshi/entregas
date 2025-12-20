@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   lexer_word_finalize.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 19:30:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:27:16 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:54:07 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "../libft/libft.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,7 +72,7 @@ static int	build_raw_string(t_token *t, t_seg *segs, size_t len)
 	it = segs;
 	while (it)
 	{
-		strcat(t->raw, it->str);
+		ft_strlcat(t->raw, it->str, len + 1);
 		it = it->next;
 	}
 	return (0);

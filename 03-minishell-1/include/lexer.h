@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   lexer.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:29:13 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/20 04:34:06 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,10 +81,12 @@ int		handle_redir(const char *line, size_t *i, size_t len,
 void	expand_tokens(t_token *head, char **envp, int last_status);
 char	*get_env_value(char **envp, const char *name);
 char	*int_to_str(int n);
+int		set_env_var(char ***envp_ref, const char *name, const char *value);
 int		expand_buf(t_exp *ctx, const char *str);
 int		expand_char(t_exp *ctx);
 int		expand_status(t_exp *ctx, size_t *i);
 void	rebuild_raw(t_token *tk);
+char	*expand_line(const char *s, char **envp, int last_status);
 
 typedef struct s_seg_ctx
 {

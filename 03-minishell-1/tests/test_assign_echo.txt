@@ -1,0 +1,4 @@
+# assignment and echo test
+VAR1=42
+echo $VAR1
+echo "Done test1"

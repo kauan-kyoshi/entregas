@@ -3,70 +3,92 @@
 /*                                                        :::      ::::::::   */
 /*   parser_heredoc.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/18 20:10:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:27:16 by kakubo-l         ###   ########.fr       */
+/*   Created: 2025/12/19 23:50:37 by kyoshi            #+#    #+#             */
+/*   Updated: 2025/12/20 02:00:55 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.h"
+#include "minishell.h"
+#include "../libft/libft.h"
+
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
 #include <readline/readline.h>
 
-static int	should_expand(t_token *delim_token)
+int	write_heredoc_entry(int fd, char *line, int expand, char **envp)
 {
-	t_seg	*s;
+	char	*expanded;
 
-	if (!delim_token->segs)
-		return (1);
-	s = delim_token->segs;
-	while (s)
+	if (expand)
 	{
-		if (s->type == SEG_SINGLE_QUOTED || s->type == SEG_DOUBLE_QUOTED)
+		expanded = expand_line(line, envp, 0);
+		if (!expanded)
 			return (0);
-		s = s->next;
+		write(fd, expanded, ft_strlen(expanded));
+		write(fd, "\n", 1);
+		free(expanded);
+	}
+	else
+	{
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
 	}
 	return (1);
 }
+/* helpers provided by src/parser_heredoc_utils.c and parser_heredoc_tmp.c */
 
-static char	*read_heredoc_lines(const char *delimiter, int expand)
+static char	*read_heredoc_lines(const char *delimiter, int expand,
+	char **envp)
 {
-	char	*line;
-	char	template[32];
-	int		fd;
+	char		template[128];
+	int			fd;
+	int			res;
+	t_hdoc_ctx	ctx;
 
-	(void)expand;
-	strcpy(template, "/tmp/minishell_heredoc_XXXXXX");
-	fd = mkstemp(template);
+	fd = open_unique_tmpfile(template, sizeof(template));
 	if (fd == -1)
 		return (NULL);
-	while (1)
+	ctx.delimiter = delimiter;
+	ctx.expand = expand;
+	ctx.envp = envp;
+	ctx.template = template;
+	res = heredoc_read_loop(fd, &ctx);
+	if (res == -1)
 	{
-		line = readline("heredoc> ");
-		if (!line || strcmp(line, delimiter) == 0)
-		{
-			if (line)
-				free(line);
-			break ;
-		}
-		write(fd, line, strlen(line));
-		write(fd, "\n", 1);
-		free(line);
+		close(fd);
+		return (NULL);
 	}
 	close(fd);
-	return (strdup(template));
+	return (ft_strdup(template));
 }
 
-char	*create_heredoc(t_token *delim_token)
+char	*create_heredoc(t_token *delim_token, char **envp)
 {
 	int		expand;
 	char	*tmpfile;
+	t_seg	*s;
 
-	expand = should_expand(delim_token);
-	tmpfile = read_heredoc_lines(delim_token->raw, expand);
+	expand = 1;
+	if (delim_token->segs)
+	{
+		s = delim_token->segs;
+		while (s)
+		{
+			if (s->type == SEG_SINGLE_QUOTED || s->type == SEG_DOUBLE_QUOTED)
+			{
+				expand = 0;
+				break ;
+			}
+			s = s->next;
+		}
+	}
+	tmpfile = read_heredoc_lines(delim_token->raw, expand, envp);
 	return (tmpfile);
 }

@@ -1,7 +1,7 @@
 NAME = minishell
-CC = gcc
-# CFLAGS = -Wall -Wextra -Werror -g
-CFLAGS =
+CC = cc
+# Allow overriding CFLAGS from environment; default to empty (use -g when needed)
+CFLAGS = -Wall -Wextra -Werror
 SUPP_FILE = readline.supp
 SRCS = $(wildcard src/*.c)
 OBJ_DIR = objs

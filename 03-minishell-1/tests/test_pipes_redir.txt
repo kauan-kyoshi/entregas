@@ -1,0 +1,7 @@
+# pipes and redirection test
+echo start
+echo one two three | wc -w
+echo eof > tmp_test_minishell
+cat < tmp_test_minishell
+rm tmp_test_minishell
+echo "Done test2"

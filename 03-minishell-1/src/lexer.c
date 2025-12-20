@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   lexer.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:03:07 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/11/27 13:45:57 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:30:43 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 static int	handle_pipe(const char *line, size_t *i, t_token **head)
 {
@@ -60,7 +60,7 @@ t_token	*lexer_tokenize(const char *line)
 	head = NULL;
 	while (i < len)
 	{
-		if (isspace((unsigned char)line[i]))
+		if (is_space_char((unsigned char)line[i]))
 		{
 			i++;
 			continue ;

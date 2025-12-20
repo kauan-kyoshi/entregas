@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "parser.h"
+#include "../libft/libft.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,7 +54,7 @@ int	add_arg(t_cmd *cmd, const char *arg)
 		return (-1);
 	if (cmd->args)
 		newargv = copy_old_args(newargv, cmd->args, cnt);
-	newargv[cnt] = strdup(arg);
+	newargv[cnt] = ft_strdup(arg);
 	newargv[cnt + 1] = NULL;
 	cmd->args = newargv;
 	return (0);
@@ -68,7 +70,7 @@ int	add_redir(t_cmd *cmd, t_redir_type type, const char *target)
 	if (!r)
 		return (-1);
 	r->type = type;
-	r->file = strdup(target);
+	r->file = ft_strdup(target);
 	r->next = cmd->redirs;
 	cmd->redirs = r;
 	return (0);

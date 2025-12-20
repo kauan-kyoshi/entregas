@@ -6,7 +6,7 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 21:17:21 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/09/26 22:21:02 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/20 03:37:22 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,25 +15,13 @@
 static char	*ft_create_new_stash(char *stash, char *newline_ptr)
 {
 	char	*new_stash;
-	size_t	len;
-	size_t	i;
 
 	if (!newline_ptr || !*(newline_ptr + 1))
 	{
 		free(stash);
 		return (NULL);
 	}
-	len = ft_strlen(newline_ptr + 1);
-	new_stash = (char *)malloc((len + 1) * sizeof(char));
-	if (!new_stash)
-	{
-		free(stash);
-		return (NULL);
-	}
-	i = 0;
-	while (newline_ptr[++i])
-		new_stash[i - 1] = newline_ptr[i];
-	new_stash[i - 1] = '\0';
+	new_stash = ft_strdup(newline_ptr + 1);
 	free(stash);
 	return (new_stash);
 }
@@ -66,10 +54,14 @@ static char	*ft_extract_line(char *stash)
 
 static char	*ft_process_buffer(char *stash, char *buffer, ssize_t bytes_read)
 {
+	char	*old;
+
 	if (bytes_read > 0)
 	{
 		buffer[bytes_read] = '\0';
+		old = stash;
 		stash = ft_strjoin(stash, buffer);
+		free(old);
 	}
 	return (stash);
 }
@@ -83,7 +75,7 @@ static char	*ft_read_and_stash(int fd, char *stash)
 	if (!buffer)
 		return (NULL);
 	bytes_read = 1;
-	while (!ft_strchr(stash, '\n') && bytes_read > 0)
+	while ((stash == NULL || !ft_strchr(stash, '\n')) && bytes_read > 0)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
 		if (bytes_read == -1)
@@ -94,7 +86,9 @@ static char	*ft_read_and_stash(int fd, char *stash)
 		}
 		stash = ft_process_buffer(stash, buffer, bytes_read);
 		if (!stash)
+		{
 			break ;
+		}
 	}
 	free(buffer);
 	return (stash);

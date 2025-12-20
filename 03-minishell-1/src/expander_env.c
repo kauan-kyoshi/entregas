@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   expander_env.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 18:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 18:05:56 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/20 04:26:34 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "../libft/libft.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 char	*get_env_value(char **envp, const char *name)
 {
@@ -33,22 +34,13 @@ char	*get_env_value(char **envp, const char *name)
 	return (NULL);
 }
 
-char	*int_to_str(int n)
-{
-	char	buf[32];
-	int		len;
-
-	len = snprintf(buf, sizeof(buf), "%d", n);
-	if (len < 0)
-		return (NULL);
-	return (strdup(buf));
-}
+/* removed int_to_str to reduce function count; use ft_itoa directly */
 
 int	expand_status(t_exp *ctx, size_t *i)
 {
 	char	*code;
 
-	code = int_to_str(ctx->last_status);
+	code = ft_itoa(ctx->last_status);
 	if (!code)
 		return (0);
 	if (!expand_buf(ctx, code))
@@ -59,4 +51,31 @@ int	expand_status(t_exp *ctx, size_t *i)
 	free(code);
 	*i += 2;
 	return (1);
+}
+
+/* helpers moved to src/env_utils.c to satisfy Norminette */
+
+int	set_env_var(char ***envp_ref, const char *name, const char *value)
+{
+	char	**envp;
+	int		idx;
+	char	*entry;
+
+	if (!envp_ref || !name)
+		return (0);
+	envp = *envp_ref;
+	idx = env_find_index(envp, name);
+	if (idx >= 0)
+	{
+		entry = env_make_entry(name, value);
+		if (!entry)
+			return (0);
+		free(envp[idx]);
+		envp[idx] = entry;
+		return (1);
+	}
+	entry = env_make_entry(name, value);
+	if (!entry)
+		return (0);
+	return (env_append_entry(envp_ref, entry));
 }

@@ -1,0 +1,38 @@
+minishell$ VAR1=hello
+minishell$ echo $VAR1
+Command 0:
+  argv[0] = echo
+  argv[1] = hello
+minishell$ # test $? after successful command
+Command 0:
+  argv[0] = #
+  argv[1] = test
+  argv[2] = 0
+  argv[3] = after
+  argv[4] = successful
+  argv[5] = command
+minishell$ true
+Command 0:
+  argv[0] = true
+minishell$ echo $?
+Command 0:
+  argv[0] = echo
+  argv[1] = 0
+minishell$ # test after failing command
+Command 0:
+  argv[0] = #
+  argv[1] = test
+  argv[2] = after
+  argv[3] = failing
+  argv[4] = command
+minishell$ false
+Command 0:
+  argv[0] = false
+minishell$ echo $?
+Command 0:
+  argv[0] = echo
+  argv[1] = 0
+minishell$ exit
+Command 0:
+  argv[0] = exit
+minishell$ 

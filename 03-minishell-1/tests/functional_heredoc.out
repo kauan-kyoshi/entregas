@@ -1,0 +1,12 @@
+minishell$ cat << EOF
+Command 0:
+  argv[0] = cat
+  redir type=HEREDOC target=/tmp/minishell_heredoc_495177_1
+minishell$ echo heredoc_done
+Command 0:
+  argv[0] = echo
+  argv[1] = heredoc_done
+minishell$ exit
+Command 0:
+  argv[0] = exit
+minishell$ 

@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   expander_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 18:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 18:05:56 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:54:07 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "../libft/libft.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,16 +20,16 @@ int	expand_buf(t_exp *ctx, const char *str)
 {
 	size_t	need;
 
-	need = ctx->out_len + strlen(str) + 1;
+	need = ctx->out_len + ft_strlen(str) + 1;
 	if (need > ctx->cap)
 	{
 		ctx->cap = need * 2;
-		ctx->out = realloc(ctx->out, ctx->cap);
+		ctx->out = xrealloc(ctx->out, ctx->cap);
 		if (!ctx->out)
 			return (0);
 	}
-	strcpy(ctx->out + ctx->out_len, str);
-	ctx->out_len += strlen(str);
+	ft_strlcpy(ctx->out + ctx->out_len, str, strlen(str) + 1);
+	ctx->out_len += ft_strlen(str);
 	return (1);
 }
 
@@ -36,7 +38,7 @@ int	expand_char(t_exp *ctx)
 	if (ctx->out_len + 2 > ctx->cap)
 	{
 		ctx->cap = (ctx->out_len + 2) * 2;
-		ctx->out = realloc(ctx->out, ctx->cap);
+		ctx->out = xrealloc(ctx->out, ctx->cap);
 		if (!ctx->out)
 			return (0);
 	}
@@ -63,7 +65,7 @@ void	rebuild_raw(t_token *tk)
 	it = tk->segs;
 	while (it)
 	{
-		strcat(tk->raw, it->str);
+		ft_strlcat(tk->raw, it->str, total + 1);
 		it = it->next;
 	}
 }

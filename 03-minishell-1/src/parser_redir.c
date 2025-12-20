@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parser_redir.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 20:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:19:34 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 21:25:53 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.h"
+#include "../libft/libft.h"
+#include "minishell.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 static t_redir_type	get_redir_type(t_token_type type)
@@ -30,14 +31,14 @@ static t_redir_type	get_redir_type(t_token_type type)
 	return (rt);
 }
 
-static char	*get_redir_target(t_redir_type rt, t_token *next)
+static char	*get_redir_target(t_redir_type rt, t_token *next, char **envp)
 {
 	char	*target;
 
 	if (rt == HEREDOC)
-		target = create_heredoc(next);
+		target = create_heredoc(next, envp);
 	else
-		target = strdup(next->raw);
+		target = ft_strdup(next->raw);
 	return (target);
 }
 
@@ -50,7 +51,8 @@ static int	process_redir(t_cmd **cur, t_redir_type rt, char *target)
 	return (result);
 }
 
-t_token	*parse_redir_token(t_token *tk, t_cmd **head, t_cmd **cur)
+t_token	*parse_redir_token(t_token *tk, t_cmd **head, t_cmd **cur,
+	char **envp)
 {
 	t_redir_type	rt;
 	t_token			*next;
@@ -60,13 +62,13 @@ t_token	*parse_redir_token(t_token *tk, t_cmd **head, t_cmd **cur)
 	next = tk->next;
 	if (!next || next->type != TOK_WORD)
 	{
-		fprintf(stderr, "parse error: redirection without target\n");
+		ft_putendl_fd("parse error: redirection without target", 2);
 		free_commands(*head);
 		return (NULL);
 	}
 	if (!ensure_cmd(head, cur))
 		return (NULL);
-	target = get_redir_target(rt, next);
+	target = get_redir_target(rt, next, envp);
 	if (!target || process_redir(cur, rt, target) == -1)
 	{
 		free_commands(*head);

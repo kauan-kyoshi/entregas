@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   lexer_word_utils.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/18 19:30:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 19:29:13 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/19 20:32:43 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 int	collect_quoted(t_word_ctx *ctx, size_t *i, char quote)
 {
@@ -47,7 +47,7 @@ int	collect_unquoted(t_word_ctx *ctx, size_t *i)
 	t_seg_ctx	seg_ctx;
 
 	start = *i;
-	while (*i < ctx->len && !isspace((unsigned char)ctx->line[*i])
+	while (*i < ctx->len && !is_space_char((unsigned char)ctx->line[*i])
 		&& ctx->line[*i] != '|' && ctx->line[*i] != '<'
 		&& ctx->line[*i] != '"' && ctx->line[*i] != '\'')
 		(*i)++;

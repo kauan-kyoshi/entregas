@@ -3,17 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/17 21:53:24 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/18 18:04:58 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/20 03:42:43 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lexer.h"
+#include "../libft/libft.h"
+#include "minishell.h"
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdio.h>
 
 static int	expand_var(t_exp *ctx, const char *s, size_t *i)
 {
@@ -23,7 +25,7 @@ static int	expand_var(t_exp *ctx, const char *s, size_t *i)
 	char	*val;
 
 	j = *i + 1;
-	while (s[j] && (isalnum((unsigned char)s[j]) || s[j] == '_'))
+	while (s[j] && (ft_isalnum((unsigned char)s[j]) || s[j] == '_'))
 		j++;
 	namelen = j - (*i + 1);
 	name = malloc(namelen + 1);
@@ -45,7 +47,7 @@ static int	expand_dollar(t_exp *ctx, const char *s, size_t *i)
 {
 	if (s[*i + 1] == '?')
 		return (expand_status(ctx, i));
-	if (isalpha((unsigned char)s[*i + 1]) || s[*i + 1] == '_')
+	if (ft_isalpha((unsigned char)s[*i + 1]) || s[*i + 1] == '_')
 		return (expand_var(ctx, s, i));
 	if (!expand_char(ctx))
 		return (0);
@@ -54,7 +56,7 @@ static int	expand_dollar(t_exp *ctx, const char *s, size_t *i)
 	return (1);
 }
 
-static char	*expand_string(const char *s, char **envp, int last_status)
+char	*expand_line(const char *s, char **envp, int last_status)
 {
 	t_exp	ctx;
 	size_t	i;
@@ -69,14 +71,15 @@ static char	*expand_string(const char *s, char **envp, int last_status)
 	i = 0;
 	while (s[i])
 	{
-		if (s[i] == '$' && !expand_dollar(&ctx, s, &i))
-			return (free(ctx.out), NULL);
-		else if (s[i] != '$')
+		if (s[i] == '$')
 		{
-			if (!expand_char(&ctx))
-				return (NULL);
-			ctx.out[ctx.out_len++] = s[i++];
+			if (!expand_dollar(&ctx, s, &i))
+				return (free(ctx.out), NULL);
+			continue ;
 		}
+		if (!expand_char(&ctx))
+			return (free(ctx.out), NULL);
+		ctx.out[ctx.out_len++] = s[i++];
 	}
 	ctx.out[ctx.out_len] = '\0';
 	return (ctx.out);
@@ -92,11 +95,11 @@ static void	expand_segment(t_seg *seg, char **envp, int last_status)
 	s = seg->str;
 	if (!s)
 		s = "";
-	result = expand_string(s, envp, last_status);
+	result = expand_line(s, envp, last_status);
 	if (!result)
 		return ;
 	free(seg->str);
-	seg->str = strdup(result);
+	seg->str = ft_strdup(result);
 	free(result);
 }
 
