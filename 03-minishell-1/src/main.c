@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/20 14:13:18 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/22 17:19:04 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 #include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-/* lexer/parser inspection removed; restore normal prompt behavior */
 
 volatile sig_atomic_t	g_last_signal = 0;
 
@@ -84,7 +83,6 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	(void)argv;
-
 	setup_signals();
 	my_env = dup_envp(envp);
 	if (!my_env)

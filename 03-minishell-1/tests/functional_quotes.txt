@@ -1,5 +1,0 @@
-VARX=world
-echo "double quotes $VARX"
-echo 'single quotes $VARX'
-echo mixed"$VARX"end
-exit

@@ -1,6 +1,0 @@
-echo one two three | wc -w
-
-echo hello > tmp_minishell_test
-cat < tmp_minishell_test
-echo done
-rm tmp_minishell_test

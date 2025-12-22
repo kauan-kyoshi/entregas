@@ -1,9 +1,0 @@
-VAR1=hello
-echo $VAR1
-# test $? after successful command
-true
-echo $?
-# test after failing command
-false
-echo $?
-exit

@@ -1,6 +1,0 @@
-cat << EOF
-line one
-line two
-EOF
-echo heredoc_done
-exit

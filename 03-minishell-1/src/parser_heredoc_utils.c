@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_heredoc_utils.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/20 00:39:26 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/21 21:48:44 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/22 17:23:33 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <readline/readline.h>
 
 /* build_tmp_name and try_create_tmp moved to parser_heredoc_tmp.c */
+/* open_unique_tmpfile moved to parser_heredoc_tmpfile.c */
 
 char	*read_trimmed_line(void)
 {
@@ -39,38 +40,6 @@ char	*read_trimmed_line(void)
 			line[len - 1] = '\0';
 	}
 	return (line);
-}
-
-int	open_unique_tmpfile(char *out, size_t out_sz)
-{
-	char		name[128];
-	int			fd;
-	pid_t		pid;
-	static int	seq;
-
-	/* Ensure project tmp directory exists (ignore errors if it already exists) */
-	if (mkdir("tmp", S_IRWXU) == -1)
-	{
-		if (errno != EEXIST)
-			return (-1);
-	}
-
-	pid = getpid();
-	seq++;
-	if (seq <= 0)
-		seq = 1;
-	while (seq < 100000)
-	{
-		if (build_tmp_name(name, pid, seq) == -1)
-			return (-1);
-		fd = try_create_tmp(name, out, out_sz);
-		if (fd != -1)
-			return (fd);
-		if (errno != EEXIST)
-			return (-1);
-		seq++;
-	}
-	return (-1);
 }
 
 int	heredoc_read_loop(int fd, t_hdoc_ctx *ctx)
