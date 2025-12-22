@@ -6,7 +6,7 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/20 01:20:00 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/20 01:22:48 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/21 21:48:44 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	build_tmp_name(char *name, pid_t pid, int seq)
 	tmp = ft_itoa((int)pid);
 	if (!tmp)
 		return (-1);
-	ft_strlcpy(name, "/tmp/minishell_heredoc_", 128);
+	ft_strlcpy(name, "tmp/minishell_heredoc_", 128);
 	ft_strlcat(name, tmp, 128);
 	free(tmp);
 	tmp = ft_itoa(seq);

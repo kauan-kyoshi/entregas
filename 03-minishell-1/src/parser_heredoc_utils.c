@@ -6,7 +6,7 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/20 00:39:26 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/20 02:00:55 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/21 21:48:44 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,13 @@ int	open_unique_tmpfile(char *out, size_t out_sz)
 	int			fd;
 	pid_t		pid;
 	static int	seq;
+
+	/* Ensure project tmp directory exists (ignore errors if it already exists) */
+	if (mkdir("tmp", S_IRWXU) == -1)
+	{
+		if (errno != EEXIST)
+			return (-1);
+	}
 
 	pid = getpid();
 	seq++;
