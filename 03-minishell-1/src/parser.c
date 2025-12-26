@@ -6,7 +6,7 @@
 /*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 16:26:47 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/20 02:30:22 by kyoshi           ###   ########.fr       */
+/*   Updated: 2025/12/23 12:50:30 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ t_cmd	*parse_tokens(t_token *tokens, char ***envp)
 	while (tk)
 	{
 		tk = dispatch_token(tk, &head, &cur, envp);
-		if (!tk && cur == NULL)
+		if (!tk)
 			return (NULL);
 	}
 	return (head);

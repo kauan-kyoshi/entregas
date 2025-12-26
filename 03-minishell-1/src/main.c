@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 16:00:00 by kakubo-l          #+#    #+#             */
-/*   Updated: 2025/12/22 17:19:04 by kakubo-l         ###   ########.fr       */
+/*   Updated: 2025/12/23 12:37:43 by kyoshi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+/* lexer/parser inspection removed; restore normal prompt behavior */
 
 volatile sig_atomic_t	g_last_signal = 0;
 
@@ -103,5 +104,3 @@ int	main(int argc, char **argv, char **envp)
 	free_envp(my_env);
 	return (0);
 }
-
-/* dup_envp and free_envp moved to utils_alloc.c to satisfy Norminette */
