@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   time_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/20 15:23:19 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/20 16:38:33 by kyoshi           ###   ########.fr       */
+/*   Updated: 2026/01/18 01:54:59 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,30 +14,34 @@
 
 long long	get_time_ms(void)
 {
-	struct timeval	tv;
+	struct timeval	v;
 
-	if (gettimeofday(&tv, NULL) == -1)
+	if (gettimeofday(&v, NULL) == -1)
 		return (-1);
-	return ((tv.tv_sec * 1000LL) + (tv.tv_usec / 1000));
+	return ((v.tv_sec * 1000LL) + (v.tv_usec / 1000));
 }
 
 void	ft_usleep(long long ms)
 {
-	long long	start;
+	long long	end;
 	long long	now;
+	long long	remaining;
 
 	if (ms <= 0)
 		return ;
-	start = get_time_ms();
-	if (start == -1)
+	now = get_time_ms();
+	if (now == -1)
 		return ;
+	end = now + ms;
 	while (1)
 	{
 		now = get_time_ms();
-		if (now == -1)
-			return ;
-		if ((now - start) >= ms)
+		if (now == -1 || now >= end)
 			break ;
-		usleep(500);
+		remaining = end - now;
+		if (remaining > 5)
+			usleep((remaining - 1) * 1000);
+		else
+			usleep(100);
 	}
 }

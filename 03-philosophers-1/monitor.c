@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   monitor.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/28 23:03:05 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/29 12:48:26 by kyoshi           ###   ########.fr       */
+/*   Updated: 2026/01/18 02:00:51 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,8 @@ static int	check_philos(t_philo *philos)
 
 void	*monitor_routine(void *arg)
 {
-	t_philo	*philos;
-	t_table	*table;
+	t_philo		*philos;
+	t_table		*table;
 
 	if (!arg)
 		return (NULL);

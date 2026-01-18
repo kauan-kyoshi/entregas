@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kyoshi <kyoshi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: kakubo-l <kakubo-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/28 22:19:28 by kyoshi            #+#    #+#             */
-/*   Updated: 2025/12/28 23:01:24 by kyoshi           ###   ########.fr       */
+/*   Updated: 2026/01/18 01:54:36 by kakubo-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void	*philo_routine(void *arg)
 		return (NULL);
 	}
 	if (philo->id % 2 == 1)
-		ft_usleep(1);
+		ft_usleep(philo->table->time_eat / 2);
 	while (!sim_stopped(philo->table))
 	{
 		eat(philo);
